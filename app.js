@@ -1,3 +1,4 @@
+require('dotenv').config();
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -7,6 +8,11 @@ const cron = require("node-cron");
 var http = require('https');
 const fs = require('fs');
 var moment = require('moment');
+const AWS = require('aws-sdk');
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
 
 
 var collectRouter = require('./routes/collect');
@@ -66,17 +72,17 @@ function getData(req, res, next) {
 
 	    res.on('end', function(){
 	        var responseData = JSON.parse(body);
-	        const dataStore = './data/' + responseData.params.timestamp + '.json';
+	        const filename = responseData.params.timestamp + '.json';
 
-	        fs.writeFile(dataStore, body, (err) => {  
-				    				  console.log(err);
-					// throws an error, you could also catch it here
-				    if (err) throw err;
-
-				    // success case, the file was saved
-				    console.log('Saved: ' + dataStore);
-				    console.log(err);
-				});
+	        const params = {
+		         Bucket: '24h-le-mans', // pass your bucket name
+		         Key: filename, // file will be saved as testBucket/contacts.csv
+		         Body: body
+		     };
+		     s3.upload(params, function(s3Err, body) {
+		         if (s3Err) throw s3Err
+		         console.log(`File uploaded successfully at ${body.Location}`)
+		     });
 
 	    });
 	}).on('error', function(e){
