@@ -3,6 +3,11 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const cron = require("node-cron");
+var http = require('https');
+const fs = require('fs');
+var moment = require('moment');
+
 
 var collectRouter = require('./routes/collect');
 var indexRouter = require('./routes/index');
@@ -39,5 +44,52 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+// schedule tasks to be run on the server
+cron.schedule("*/10 * * * * *", function() {
+  console.log('CRON TIME - ' + moment().format());
+  getData();
+
+});
+
+
+function getData(req, res, next) {
+
+	const url = 'https://storage.googleapis.com/fiawec-prod/assets/live/WEC/__data.json?_=' + Math.random();
+
+	http.get(url, function(res){
+	    var body = '';
+
+	    res.on('data', function(chunk){
+	        body += chunk;
+	    });
+
+	    res.on('end', function(){
+	        var responseData = JSON.parse(body);
+	        const dataStore = './data/' + responseData.params.timestamp + '.json';
+
+	        try {
+			  if (fs.existsSync(dataStore)) {
+			    console.log('Exists: ' + dataStore);
+			  }
+			} catch(err) {
+				  
+		        fs.writeFile(dataStore, body, (err) => {  
+				    // throws an error, you could also catch it here
+				    if (err) throw err;
+
+				    // success case, the file was saved
+				    console.log('Saved: ' + dataStore);
+				    console.log(err);
+				});
+			}
+
+
+	    });
+	}).on('error', function(e){
+	      console.log("Got an error: ", e);
+	});
+}
+
 
 module.exports = app;

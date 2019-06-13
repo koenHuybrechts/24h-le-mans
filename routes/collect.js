@@ -4,7 +4,10 @@ const fs = require('fs');
 var router = express.Router();
 
 /* GET collect page. */
-router.get('/', function(req, res, next) {
+router.get('/', getData);
+
+
+function getData(req, res, next) {
 
 	const url = 'https://storage.googleapis.com/fiawec-prod/assets/live/WEC/__data.json?_=' + Math.random();
 
@@ -32,29 +35,7 @@ router.get('/', function(req, res, next) {
 	}).on('error', function(e){
 	      console.log("Got an error: ", e);
 	});
-
-/*
-
-	var options = {
-	  hostname: 'http://storage.googleapis.com'
-	  ,path: '/fiawec-prod/assets/live/WEC/__data.json?_=' + '343adadaz245'
-	  ,method: 'GET'
-      ,json:true
-	};
-
-	var reqA = http.get(options, function(res) {
-	  res.setEncoding('utf8');
-	  res.on('data', function (data) {
-	       console.log(data); // I can't parse it because, it's a string. why?
-	  });
-	});
-	reqA.on('error', function(e) {
-	  console.log('problem with request: ' + e.message);
-	});
-	reqA.end();
-*/
-
   res.send('get the le mans data');
-});
+}
 
 module.exports = router;
