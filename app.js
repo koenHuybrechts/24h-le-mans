@@ -68,22 +68,15 @@ function getData(req, res, next) {
 	        var responseData = JSON.parse(body);
 	        const dataStore = './data/' + responseData.params.timestamp + '.json';
 
-	        try {
-			  if (fs.existsSync(dataStore)) {
-			    console.log('Exists: ' + dataStore);
-			  }
-			} catch(err) {
-				  
-		        fs.writeFile(dataStore, body, (err) => {  
-				    // throws an error, you could also catch it here
+	        fs.writeFile(dataStore, body, (err) => {  
+				    				  console.log(err);
+					// throws an error, you could also catch it here
 				    if (err) throw err;
 
 				    // success case, the file was saved
 				    console.log('Saved: ' + dataStore);
 				    console.log(err);
 				});
-			}
-
 
 	    });
 	}).on('error', function(e){
